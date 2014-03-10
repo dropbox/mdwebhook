@@ -70,8 +70,9 @@ def process_user(uid):
         for path, metadata in result['entries']:
 
             # Ignore deleted files, folders, and non-markdown files
-            if metadata is None or metadata['is_dir']
-                    or not path.endswith('.md'):
+            if (metadata is None or
+                    metadata['is_dir'] or
+                    not path.endswith('.md')):
                 continue
 
             # Convert to Markdown and store as <basename>.html
