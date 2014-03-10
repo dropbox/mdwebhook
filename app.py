@@ -86,13 +86,6 @@ def process_user(uid):
         # Repeat only if there's more to do
         has_more = result['has_more']
 
-def validate_request(message):
-    '''Validate that the request is properly signed by Dropbox.
-       (If not, this is a spoofed webhook.)'''
-
-    signature = request.headers.get('X-Dropbox-Signature')
-    return signature == hmac.new(APP_SECRET, message, sha256).hexdigest()
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -104,6 +97,13 @@ def login():
 @app.route('/done')
 def done(): 
     return render_template('done.html')
+
+def validate_request(message):
+    '''Validate that the request is properly signed by Dropbox.
+       (If not, this is a spoofed webhook.)'''
+
+    signature = request.headers.get('X-Dropbox-Signature')
+    return signature == hmac.new(APP_SECRET, message, sha256).hexdigest()
 
 @app.route('/webhook', methods=['GET'])
 def challenge():
