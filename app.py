@@ -4,8 +4,8 @@ import hmac
 import json
 import os
 
-from flask import abort, Flask, redirect, render_template, request, session, url_for
 from dropbox.client import DropboxClient, DropboxOAuth2Flow
+from flask import abort, Flask, redirect, render_template, request, session, url_for
 from markdown import markdown
 import redis
  
@@ -39,8 +39,26 @@ def get_flow():
         session,
         'dropbox-csrf-token')
 
+@app.route('/oauth_callback')
+def oauth_callback():
+    '''Callback function for when the user returns from OAuth.'''
+
+    access_token, uid, extras = get_flow().finish(request.args)
+ 
+    # Extract and store the access token for this user
+    redis_client.hset('tokens', uid, access_token)
+
+    process_user(uid)
+
+    return redirect(url_for('done'))
+
 def process_user(uid):
+    '''Call /delta for the given user ID and process any changes.'''
+
+    # OAuth token for the user
     token = redis_client.hget('tokens', uid)
+
+    # /delta cursor for the user (null the first time)
     cursor = redis_client.hget('cursors', uid)
 
     client = DropboxClient(token)
@@ -52,7 +70,9 @@ def process_user(uid):
         for path, metadata in result['entries']:
 
             # Ignore deleted files, folders, and non-markdown files
-            if metadata is None or metadata['is_dir'] or not path.endswith('.md'): continue
+            if metadata is None or metadata['is_dir']
+                    or not path.endswith('.md'):
+                continue
 
             # Convert to Markdown and store as <basename>.html
             html = markdown(client.get_file(path).read())
@@ -62,34 +82,23 @@ def process_user(uid):
         cursor = result['cursor']
         redis_client.hset('cursors', uid, cursor)
 
-        # Repeat only if there's more
+        # Repeat only if there's more to do
         has_more = result['has_more']
 
 def validate_request(message):
-    '''Validate that the request is properly signed by Dropbox. (If not, this is a spoofed webhook.)'''
+    '''Validate that the request is properly signed by Dropbox.
+       (If not, this is a spoofed webhook.)'''
 
-    return request.headers.get('X-Dropbox-Signature') == hmac.new(APP_SECRET, message, sha256).hexdigest()
+    signature = request.headers.get('X-Dropbox-Signature')
+    return signature == hmac.new(APP_SECRET, message, sha256).hexdigest()
 
 @app.route('/')
 def index():
     return render_template('index.html')
- 
+
 @app.route('/login')
 def login():
     return redirect(get_flow().start())
- 
-@app.route('/oauth_callback')
-def oauth_callback():
-    '''Callback function for when the user returns from OAuth.'''
-
-    access_token, uid, extras = get_flow().finish(request.args)
- 
-    # Extract and store the access token, user ID, and time zone.
-    redis_client.hset('tokens', uid, access_token)
-
-    process_user(uid)
-
-    return redirect(url_for('done'))
 
 @app.route('/done')
 def done(): 
@@ -97,6 +106,8 @@ def done():
 
 @app.route('/webhook', methods=['GET'])
 def challenge():
+    '''Respond to the webhook challenge (GET request) by echoing back the challenge parameter.'''
+
     # Make sure this is a valid request from Dropbox
     if not validate_request('dbx'): abort(403)
 
@@ -104,12 +115,16 @@ def challenge():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
+    '''Receive a list of changed user IDs from Dropbox and process each.'''
+
     # Make sure this is a valid request from Dropbox
     if not validate_request(request.data): abort(403)
 
     for uid in json.loads(request.data)['delta']['users']:
+        # In a production app, we would enqueue this work and return.
+        # But for this sample, we'll just process the account synchronously.
         process_user(uid)
     return ''
- 
+
 if __name__=='__main__':
     app.run(debug=True)
