@@ -3,6 +3,7 @@ from hashlib import sha256
 import hmac
 import json
 import os
+import threading
 
 from dropbox.client import DropboxClient, DropboxOAuth2Flow
 from flask import abort, Flask, redirect, render_template, request, session, url_for
@@ -58,7 +59,7 @@ def process_user(uid):
     # OAuth token for the user
     token = redis_client.hget('tokens', uid)
 
-    # /delta cursor for the user (null the first time)
+    # /delta cursor for the user (None the first time)
     cursor = redis_client.hget('cursors', uid)
 
     client = DropboxClient(token)
@@ -98,19 +99,16 @@ def login():
 def done(): 
     return render_template('done.html')
 
-def validate_request(message):
+def validate_request():
     '''Validate that the request is properly signed by Dropbox.
        (If not, this is a spoofed webhook.)'''
 
     signature = request.headers.get('X-Dropbox-Signature')
-    return signature == hmac.new(APP_SECRET, message, sha256).hexdigest()
+    return signature == hmac.new(APP_SECRET, request.data, sha256).hexdigest()
 
 @app.route('/webhook', methods=['GET'])
 def challenge():
     '''Respond to the webhook challenge (GET request) by echoing back the challenge parameter.'''
-
-    # Make sure this is a valid request from Dropbox
-    if not validate_request('dbx'): abort(403)
 
     return request.args.get('challenge')
 
@@ -119,12 +117,14 @@ def webhook():
     '''Receive a list of changed user IDs from Dropbox and process each.'''
 
     # Make sure this is a valid request from Dropbox
-    if not validate_request(request.data): abort(403)
+    if not validate_request(): abort(403)
 
     for uid in json.loads(request.data)['delta']['users']:
-        # In a production app, we would enqueue this work and return.
-        # But for this sample, we'll just process the account synchronously.
-        process_user(uid)
+        # We need to respond quickly to the webhook request, so we do the
+        # actual work in a separate thread. For more robustness, it's a
+        # good idea to add the work to a reliable queue and process the queue
+        # in a worker process.
+        threading.Thread(target=process_user, args=(uid,)).start()
     return ''
 
 if __name__=='__main__':
