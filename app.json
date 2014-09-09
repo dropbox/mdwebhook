@@ -1,0 +1,22 @@
+{
+  "name": "Dropbox Webhook sample app",
+  "logo": "https://dt8kf6553cww8.cloudfront.net/static/images/icons/blue_dropbox_glyph-vflJ8-C5d.png",
+  "repository": "https://github.com/dropbox/mdwebhook",
+  "website": "https://www.dropbox.com/developers/webhooks/tutorial",
+  "keywords": ["dropbox", "python", "flask"],
+  "addons": [
+    "redistogo"
+  ],
+  "env": {
+    "APP_KEY": {
+      "description": "Dropbox OAuth app key"
+    },
+    "APP_SECRET": {
+      "description": "Dropbox OAuth app secret"
+    },
+    "FLASK_SECRET_KEY": {
+      "description": "A secret key for verifying the integrity of signed cookies.",
+      "generator": "secret"
+    }
+  }
+}

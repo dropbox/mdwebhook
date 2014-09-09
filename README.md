@@ -15,3 +15,7 @@ This sample was built with Heroku in mind as a target, so the simplest way to ru
 3. Launch the app via `foreman start` or deploy to Heroku.
 
 You can also just set the required environment variables (using `.env_sample` as a guide) and run the app directly with `python app.py`.
+
+## Deploy on Heroku
+
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
