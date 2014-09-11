@@ -1,11 +1,15 @@
 {% extends 'layout.html' %}
 {% block body %}
 
-<p>This app is almost ready to go! Just one more step: go to the <a href="https://www.dropbox.com/developers/apps/info/{{ app_key }}">App Console</a> and add the following as an OAuth 2 redirect URI:</p>
-	<p><code>{{ redirect_url }}</code></p>
+<p>This app is almost ready to go! Just two more steps. Go to the <a href="https://www.dropbox.com/developers/apps/info/{{ app_key }}">App Console</a> and make these changes:</p>
+
+<ol>
+	<li>Add the following as an OAuth 2 redirect URI: <code>{{ redirect_url }}</code></li>
+	<li>Add the following as a webhook URI: <code>{{ webhook_url }}</code></li>
+</ol>
 
 <p>(You might also want to click the "enable additional users" button if you haven't already. Otherwise no one else will be able to log in to your app.)</p>
 
-<p>Once your done with all that, <a href="/">try the app out yourself</a>.</p>
+<p>Once your done with all that, <a href="{{ home_url }}">try the app out yourself</a>.</p>
 
 {% endblock %}
