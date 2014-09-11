@@ -19,3 +19,15 @@ You can also just set the required environment variables (using `.env_sample` as
 ## Deploy on Heroku
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
+Once you've deployed, you can easily clone the app and make modifications:
+
+```
+$ heroku clone -a new-app-name
+...
+$ vim index.js
+$ git add .
+$ git commit -m "update index.js"
+$ git push heroku master
+...
+```

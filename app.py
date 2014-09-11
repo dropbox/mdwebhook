@@ -21,27 +21,29 @@ app.debug = True
  
 # A random secret used by Flask to encrypt session data cookies
 app.secret_key = os.environ['FLASK_SECRET_KEY']
- 
-def get_callback_url():
-    '''Generate a proper callback URL, forcing HTTPS if not running locally'''
+
+def get_url(route):
+    '''Generate a proper URL, forcing HTTPS if not running locally'''
     url = url_for(
-        'oauth_callback',
+        route,
         _external=True,
         _scheme='http' if request.host.startswith('127.0.0.1') else 'https'
     )
+
     return url
- 
+
 def get_flow():
     return DropboxOAuth2Flow(
         APP_KEY,
         APP_SECRET,
-        get_callback_url(),
+        get_url('oauth_callback'),
         session,
         'dropbox-csrf-token')
 
 @app.route('/welcome')
 def welcome():
-    return render_template('welcome.html', redirect_url=get_callback_url(), app_key=APP_KEY)
+    return render_template('welcome.html', redirect_url=get_url('oauth_callback'),
+        webhook_url=get_url('webhook'), home_url=get_url('index'), app_key=APP_KEY)
 
 @app.route('/oauth_callback')
 def oauth_callback():

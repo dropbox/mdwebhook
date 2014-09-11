@@ -1,6 +1,15 @@
-body { font-family: Helvetica, 'Helvetica Neue', 'Segoe UI', Arial; }
+body { font-family: Helvetica, 'Helvetica Neue', 'Segoe UI', Arial; font-size: 18px; line-height: 28px; color: #3d3d3d; }
+#container { max-width: 500px; margin: 0 auto; }
+ol li { margin-bottom: 18px; }
 h1 { text-align: center; margin: 50px; padding-top: 0; font-weight: normal; }
-code { font-family: Monaco, Menlo, Consolas, monospace; }
+code {
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border: 1px solid #BCBEC0;
+    padding: 2px 8px;
+    font-family: Monaco, Menlo, Consolas, monospace;
+}
 a.image {
     width: 612px;
     display: block;
@@ -34,4 +43,4 @@ a.button:active {
     box-shadow: inset 0px -3px 1px rgba(255, 255, 255, 1), inset 0 0px 3px rgba(0, 0, 0, 0.9);
 }
 a.button:active:after { content: ""; width: 100%; height: 3px; background: #fff; position: absolute; bottom: -1px; left: 0; }
-p { text-align: center; font-size: 18px; margin-top: 50px; }
+p { font-size: 18px; margin: 50px 0; }
