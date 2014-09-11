@@ -39,6 +39,10 @@ def get_flow():
         session,
         'dropbox-csrf-token')
 
+@app.route('/welcome')
+def welcome():
+    return render_template('welcome.html', redirect_url=get_callback_url(), app_key=APP_KEY)
+
 @app.route('/oauth_callback')
 def oauth_callback():
     '''Callback function for when the user returns from OAuth.'''
