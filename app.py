@@ -27,7 +27,7 @@ def get_url(route):
     url = url_for(
         route,
         _external=True,
-        _scheme='http' if request.host.startswith('127.0.0.1') else 'https'
+        _scheme='http' if (request.host.startswith('127.0.0.1') or request.host is 'localhost') else 'https'
     )
 
     return url
