@@ -3,6 +3,7 @@ import hmac
 import json
 import os
 import threading
+import urlparse
 
 from dropbox.client import DropboxClient, DropboxOAuth2Flow
 from flask import abort, Flask, redirect, render_template, request, session, url_for
@@ -24,10 +25,11 @@ app.secret_key = os.environ['FLASK_SECRET_KEY']
 
 def get_url(route):
     '''Generate a proper URL, forcing HTTPS if not running locally'''
+    host = urlparse.urlparse(request.url).hostname
     url = url_for(
         route,
         _external=True,
-        _scheme='http' if request.host.startswith('127.0.0.1') else 'https'
+        _scheme='http' if host in ('127.0.0.1', 'localhost') else 'https'
     )
 
     return url
