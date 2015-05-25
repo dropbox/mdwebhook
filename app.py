@@ -60,6 +60,16 @@ def oauth_callback():
 
     return redirect(url_for('done'))
 
+def _is_markdown_file(file_path):
+    '''Return True if file_path is a Markdown file (by extension), False otherwise'''
+    markdown_extensions = ('.md', '.markdown')
+    return file_path.endswith(markdown_extensions)
+
+def _extract_filename(file_path):
+    '''Return filename of file path without file extension'''
+    filename, _ = os.path.splitext(file_path)
+    return filename
+
 def process_user(uid):
     '''Call /delta for the given user ID and process any changes.'''
 
@@ -80,12 +90,12 @@ def process_user(uid):
             # Ignore deleted files, folders, and non-markdown files
             if (metadata is None or
                     metadata['is_dir'] or
-                    not path.endswith('.md')):
+                    not _is_markdown_file(path)):
                 continue
 
             # Convert to Markdown and store as <basename>.html
             html = markdown(client.get_file(path).read())
-            client.put_file(path[:-3] + '.html', html, overwrite=True)
+            client.put_file(_extract_filename(path) + '.html', html, overwrite=True)
 
         # Update cursor
         cursor = result['cursor']
