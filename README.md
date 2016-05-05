@@ -19,3 +19,19 @@ You can also just set the required environment variables (using `.env_sample` as
 ## Deploy on Heroku
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+=======
+You can deploy directly to Heroku with the button below. First you'll need to create an API app via the [App Console](https://www.dropbox.com/developers/apps). Make sure your app has access to files (not just datastores), and answer "Yes - My app only needs access to files it creates" to ensure your app gets created with "App folder" permissions.
+
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
+Once you've deployed, you can easily clone the app and make modifications:
+
+```
+$ heroku clone -a new-app-name
+...
+$ vim index.js
+$ git add .
+$ git commit -m "update index.js"
+$ git push heroku master
+...
+```
