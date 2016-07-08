@@ -69,7 +69,7 @@ def process_user(account):
     # /delta cursor for the user (None the first time)
     cursor = redis_client.hget('cursors', account)
 
-    client = Dropbox(token)
+    dbx = Dropbox(token)
     has_more = True
 
     while has_more:
