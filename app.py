@@ -128,7 +128,7 @@ def webhook():
     # Make sure this is a valid request from Dropbox
     if not validate_request(): abort(403)
 
-    for account in json.loads(request.data)['delta']['users']:
+    for account in json.loads(request.data)['list_folder']['accounts']:
         # We need to respond quickly to the webhook request, so we do the
         # actual work in a separate thread. For more robustness, it's a
         # good idea to add the work to a reliable queue and process the queue
