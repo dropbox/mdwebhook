@@ -7,7 +7,7 @@ import urlparse
 
 from dropbox import Dropbox, DropboxOAuth2Flow
 from dropbox.files import DeletedMetadata, FolderMetadata, WriteMode
-from flask import abort, Flask, redirect, render_template, request, session, url_for
+from flask import abort, Flask, redirect, render_template, Response, request, session, url_for
 from markdown import markdown
 import redis
 
@@ -116,7 +116,11 @@ def done():
 def challenge():
     '''Respond to the webhook challenge (GET request) by echoing back the challenge parameter.'''
 
-    return request.args.get('challenge')
+    resp = Response(request.args.get('challenge'))
+    resp.headers['Content-Type'] = 'text/plain'
+    resp.headers['X-Content-Type-Options'] = 'nosniff'
+
+    return resp
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
