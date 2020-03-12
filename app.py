@@ -3,7 +3,7 @@ import hmac
 import json
 import os
 import threading
-import urlparse
+import urllib.parse
 
 from dropbox import Dropbox, DropboxOAuth2Flow
 from dropbox.files import DeletedMetadata, FolderMetadata, WriteMode
@@ -12,7 +12,7 @@ from markdown import markdown
 import redis
 
 redis_url = os.environ['REDISTOGO_URL']
-redis_client = redis.from_url(redis_url)
+redis_client = redis.from_url(redis_url, decode_responses=True)
 
 # App key and secret from the App console (dropbox.com/developers/apps)
 APP_KEY = os.environ['APP_KEY']
@@ -26,7 +26,7 @@ app.secret_key = os.environ['FLASK_SECRET_KEY']
 
 def get_url(route):
     '''Generate a proper URL, forcing HTTPS if not running locally'''
-    host = urlparse.urlparse(request.url).hostname
+    host = urllib.parse.urlparse(request.url).hostname
     url = url_for(
         route,
         _external=True,
@@ -90,8 +90,8 @@ def process_user(account):
 
             # Convert to Markdown and store as <basename>.html
             _, resp = dbx.files_download(entry.path_lower)
-            html = markdown(unicode(resp.content, "utf-8")).encode("utf-8")
-            dbx.files_upload(html, entry.path_lower[:-3] + '.html', mode=WriteMode('overwrite'))
+            html = markdown(resp.content.decode("utf-8"))
+            dbx.files_upload(bytes(html, encoding='utf-8'), entry.path_lower[:-3] + '.html', mode=WriteMode('overwrite'))
 
         # Update cursor
         cursor = result.cursor
@@ -127,8 +127,10 @@ def webhook():
     '''Receive a list of changed user IDs from Dropbox and process each.'''
 
     # Make sure this is a valid request from Dropbox
-    signature = request.headers.get('X-Dropbox-Signature').encode("utf-8")
-    if not hmac.compare_digest(signature, hmac.new(APP_SECRET, request.data, sha256).hexdigest()):
+    signature = request.headers.get('X-Dropbox-Signature')
+    key = bytes(APP_SECRET, encoding="ascii")
+    computed_signature = hmac.new(key, request.data, sha256).hexdigest()
+    if not hmac.compare_digest(signature, computed_signature):
         abort(403)
 
     for account in json.loads(request.data)['list_folder']['accounts']:
