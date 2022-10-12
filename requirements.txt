@@ -1,4 +1,4 @@
-dropbox==9.4.0
+dropbox==11.35.0
 Flask==0.10.1
 gunicorn==18.0
 Markdown==2.4
